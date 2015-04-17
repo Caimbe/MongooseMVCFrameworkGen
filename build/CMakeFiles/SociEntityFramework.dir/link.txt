@@ -1,0 +1,1 @@
+/usr/bin/c++    -std=c++11 -g    CMakeFiles/SociEntityFramework.dir/src/entitycreator.cpp.o CMakeFiles/SociEntityFramework.dir/src/repositorycreator.cpp.o CMakeFiles/SociEntityFramework.dir/src/processdatabase.cpp.o CMakeFiles/SociEntityFramework.dir/src/main.cpp.o  -o SociEntityFramework -rdynamic -lboost_filesystem -lboost_system -lboost_program_options -lsoci_core 

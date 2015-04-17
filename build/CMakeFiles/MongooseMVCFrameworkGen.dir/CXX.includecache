@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/usuario/workspace/MongooseMVCFrameworkGen/src/createmodel.cpp
+createmodel.h
+/home/usuario/workspace/MongooseMVCFrameworkGen/src/createmodel.h
+util.hpp
+/home/usuario/workspace/MongooseMVCFrameworkGen/src/util.hpp
+fstream
+-
+
+/home/usuario/workspace/MongooseMVCFrameworkGen/src/createmodel.h
+entity.h
+/home/usuario/workspace/MongooseMVCFrameworkGen/src/entity.h
+
+/home/usuario/workspace/MongooseMVCFrameworkGen/src/entity.h
+vector
+-
+string
+-
+
+/home/usuario/workspace/MongooseMVCFrameworkGen/src/util.hpp
+iomanip
+-
+sstream
+-
+unistd.h
+-
+sys/stat.h
+-
+direct.h
+-
+iostream
+-
+boost/algorithm/string.hpp
+-
+

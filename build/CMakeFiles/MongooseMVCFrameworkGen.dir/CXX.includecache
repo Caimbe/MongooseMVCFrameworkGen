@@ -6,17 +6,19 @@
 
 #IncludeRegexTransform: 
 
-/home/usuario/workspace/MongooseMVCFrameworkGen/src/createmodel.cpp
-createmodel.h
-/home/usuario/workspace/MongooseMVCFrameworkGen/src/createmodel.h
+/home/usuario/workspace/MongooseMVCFrameworkGen/src/createcontroller.cpp
+createcontroller.h
+/home/usuario/workspace/MongooseMVCFrameworkGen/src/createcontroller.h
 util.hpp
 /home/usuario/workspace/MongooseMVCFrameworkGen/src/util.hpp
 fstream
 -
 
-/home/usuario/workspace/MongooseMVCFrameworkGen/src/createmodel.h
+/home/usuario/workspace/MongooseMVCFrameworkGen/src/createcontroller.h
 entity.h
 /home/usuario/workspace/MongooseMVCFrameworkGen/src/entity.h
+fstream
+-
 
 /home/usuario/workspace/MongooseMVCFrameworkGen/src/entity.h
 vector

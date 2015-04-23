@@ -36,6 +36,25 @@ inline std::string to_string(const std::tm& tm, const char* format="%4d-%02d-%02
     return buffer;
 }
 
+
+inline string table2className(string& table)
+{
+    string className = table;
+    className[0] = toupper(className[0]);
+    for(size_t find = className.find("_"); find != string::npos; find=className.find("_"))
+    {
+        className.erase(find, 1);
+        className[find] = toupper(className[find]);
+    }
+    return className;
+}
+inline string upcaseFirstChar(string& table)
+{
+    string className = table;
+    className[0] = toupper(className[0]);
+    return className;
+}
+
 #if _MSC_VER || __MINGW32__
 #	define makedir(x) mkdir(x)
 #else

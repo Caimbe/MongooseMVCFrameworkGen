@@ -24,7 +24,7 @@ void CreateModel::createH()
             "#include \"model.h\"\n"
             "class "<<entity.name<<"Model : public Model\n{\n"
             "public:\n"
-            "\tvoid save(const "<<entity.name<<"& "<<nameEntityL<<");\n"
+            "\tint save(const "<<entity.name<<"& "<<nameEntityL<<");\n"
             "\t"<<entity.name<<"List list(const string& where=\"\");\n"
             "};\n"
             "#endif";
@@ -41,13 +41,13 @@ void CreateModel::createCpp()
 
 void CreateModel::createList(ofstream& file)
 {
-    file << entity.name<<"List "<<entity.name<<"::list(const string& where)\n{\n"
+    file << entity.name<<"List "<<entity.name<<"Model::list(const string& where)\n{\n"
             "\treturn repository.select<"<<entity.name<<"List>(where);\n"
             "}\n";
 }
 
 void CreateModel::createSave(ofstream& file)
-{file << "int "<<entity.name<<"::save(const "<<entity.name<<"& obj)\n{\n"
-         "\trepository.insert(obj);\n"
+{file << "int "<<entity.name<<"Model::save(const "<<entity.name<<"& obj)\n{\n"
+         "\treturn repository.insert(obj);\n"
          "}\n";
 }

@@ -23,14 +23,12 @@ void CreateView::createList()
         throw runtime_error("not possibele create "+viewDir+"/"+nameEntityL+"/list.html");
 
     file << "<h2>List</h2>\n"
-            "<a href=/"<<nameEntityL<<"/add>Add</a>"
-            "<table>\n"
+            "<a href=/"<<nameEntityL<<"/add>Add</a>\n"
+            "<table id='tlist'>\n"
             "  <tr>\n";
     for(const Variable& var: entity.vecVariable)
         file << "    <th>"<<var.name<<"</th>\n";
     file << "  </tr>\n"
-            "  <tr id=\"tbody\">\n"
-            "  </tr>\n"
             "</table>\n";
 }
 

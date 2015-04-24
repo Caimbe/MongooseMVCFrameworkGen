@@ -16,6 +16,7 @@ class ProcessFiles
     vector<Entity> vecEntity;
 
     Entity createEntity(const ifstream& file);
+    void createControllerBase();
 public:
     ProcessFiles(Options& options);
 };

@@ -12,6 +12,7 @@ CreateView::CreateView(string &viewDir, Entity &entity)
 
     createList();
     createAdd();
+    createShow();
 
     clog << entity.name << " View Genereted.\n";
 }
@@ -47,4 +48,19 @@ void CreateView::createAdd()
     file << "  </fieldset>"
             "<input type='submit' value='Submit'>"
             "</form>";
+}
+
+void CreateView::createShow()
+{
+    ofstream file(viewDir+"/"+nameEntityL+"/show.html");
+    if(!file.is_open())
+        throw runtime_error("not possibele create "+viewDir+"/"+nameEntityL+"/show.html");
+
+    file << "<h2>Show</h2>\n"
+            "  <fieldset>"
+            "   <legend>New "<<entity.name<<"</legend>";
+    for(const Variable& var: entity.vecVariable)
+        file << "   <label>"<<var.name<<": <label id='"<<var.name<<"'></label>";
+    file << "  </fieldset>"
+            "<input type='submit' value='Submit'>";
 }

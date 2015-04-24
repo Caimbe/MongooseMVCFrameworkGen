@@ -9,6 +9,12 @@ using namespace std;
 struct Variable{
     string type;
     string name;
+    bool key;
+
+    Variable()
+    {
+        key=false;
+    }
 };
 
 struct Entity

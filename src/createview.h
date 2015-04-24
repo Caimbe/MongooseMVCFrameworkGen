@@ -12,6 +12,7 @@ public:
     CreateView(string& viewDir, Entity& entity);
     void createList();
     void createAdd();
+    void createShow();
 };
 
 #endif // CREATEVIEW_H

@@ -71,10 +71,18 @@ void CreateController::insertListImplemantation(ofstream &file, Entity &entity)
             "\tstring lines;\n"
             "\tfor(const "<<entity.name<<"Ptr& "<<nameEntityL<<": list)\n\t{\n"
             "\t\tlines += \"  <tr>\"";
+    string paramShow;
+    for(Variable var: entity.vecVariable)
+    {
+        if(var.key){
+            paramShow+=(paramShow.size()?"&":"");
+            paramShow+=var.name+"=\"+"+nameEntityL+"->get"+upcaseFirstChar(var.name)+"()";
+        }
+    }
     for(Variable var: entity.vecVariable)
     {
         file << "\n\t\t\"<td>"
-             << (var.key?"<a href=/"+nameEntityL+"/show?key=\"+"+nameEntityL+"->get"+upcaseFirstChar(var.name)+"()+\">\"+":"\"+")
+             << (var.key?"<a href=/"+nameEntityL+"/show?"+paramShow+"+\">\"+":"\"+")
              << (var.type!="string"?"to_string(":"")
              << nameEntityL<<"->get"
              << upcaseFirstChar(var.name)
@@ -109,11 +117,23 @@ void CreateController::insertSaveImplemantation(ofstream &file, Entity &entity)
 void CreateController::insertShowImplemantation(ofstream &file, Entity &entity)
 {
     file << "void " << entity.name<<SUFFIX_CONTROL << "::show(Request &request, StreamResponse &response)\n{\n"
-            "\tPage page = createPage(\"/"<<nameEntityL<<"/show.html\");\n";
+            "\tPage page = createPage(\"/"<<nameEntityL<<"/show.html\");\n"
+            "\t"<<entity.name<<"List "<<nameEntityL<<" = model.list(";
+    bool virgula = false;
+    for(Variable var: entity.vecVariable){
+        if(var.key){
+            if(virgula)
+                file << " OR ";
+            file << "\""<< var.name << "='\"+request.get(\""<<var.name<<"\")";
+            virgula=true;
+        }
+    }
+    file << "+'\\'');\n";
 
     for(Variable var: entity.vecVariable)
-        file << "\tpage.insertContentId(\""<<var.name<<"\", "
-            "\tresponse << page;\n"
+        file << "\tpage.insertContentId(\""<<var.name<<"\", "<<nameEntityL<<"[0]->get"<<upcaseFirstChar(var.name)<<"());\n";
+
+    file << "\tresponse << page;\n"
             "}\n";
 }
 

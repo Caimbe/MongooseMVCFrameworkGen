@@ -58,9 +58,8 @@ void CreateView::createShow()
 
     file << "<h2>Show</h2>\n"
             "  <fieldset>"
-            "   <legend>New "<<entity.name<<"</legend>";
+            "   <legend>"<<entity.name<<"</legend>";
     for(const Variable& var: entity.vecVariable)
-        file << "   <label>"<<var.name<<": <label id='"<<var.name<<"'></label>";
-    file << "  </fieldset>"
-            "<input type='submit' value='Submit'>";
+        file << "   <span>"<<var.name<<":</span> <label id='"<<var.name<<"'></label><br/>\n";
+    file << "  </fieldset>";
 }

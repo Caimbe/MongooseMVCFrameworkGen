@@ -41,7 +41,10 @@ Options process_command_line(int argc, char** argv)
     desc.add_options()
             ("help,h", "Print this messages")
             ("input-file", po::value< vector<string> >(), "input files")
-            ("dir-view,v", po::value<string>()->default_value("view/"), "set dir to generete files for view, default is: ./view")
+            ("dir-view,d", po::value<string>()->default_value("view/"), "set dir to generete files for view, default is: ./view")
+            ("model,m", po::value<bool>()->default_value(false), "create class model")
+            ("view,v", po::value<bool>()->default_value(false), "create file html view")
+            ("controller,c", po::value<bool>()->default_value(false), "create class controller")
     ;
 
     /************input-file not obrig.*****/
@@ -67,6 +70,18 @@ Options process_command_line(int argc, char** argv)
     if(vm.count("dir-view"))
     {
         opc.viewDir = vm["dir-view"].as<string>();
+    }
+    if(vm.count("model"))
+    {
+        opc.model = vm["model"].as<bool>();
+    }
+    if(vm.count("view"))
+    {
+        opc.view = vm["view"].as<bool>();
+    }
+    if(vm.count("controller"))
+    {
+        opc.controller = vm["controller"].as<bool>();
     }
 
     return opc;

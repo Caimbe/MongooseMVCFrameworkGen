@@ -13,6 +13,7 @@ CreateView::CreateView(string &viewDir, Entity &entity)
     createList();
     createAdd();
     createShow();
+    createEdit();
 
     clog << entity.name << " View Genereted.\n";
 }
@@ -43,8 +44,12 @@ void CreateView::createAdd()
             "<form method='post' action='/"<<nameEntityL<<"/save'>"
             "  <fieldset>"
             "   <legend>New "<<entity.name<<"</legend>";
-    for(const Variable& var: entity.vecVariable)
-        file << "   <label>"<<var.name<<": <input name='"<<var.name<<"'></label>";
+    for(const Variable& var: entity.vecVariable){
+        file << "   <label>"<<var.name<<": <input name='"<<var.name<<"' ";
+        if(var.type=="tm")
+            file << "type='date'";
+        file << "></label>";
+    }
     file << "  </fieldset>"
             "<input type='submit' value='Submit'>"
             "</form>";
@@ -61,5 +66,38 @@ void CreateView::createShow()
             "   <legend>"<<entity.name<<"</legend>";
     for(const Variable& var: entity.vecVariable)
         file << "   <span>"<<var.name<<":</span> <label id='"<<var.name<<"'></label><br/>\n";
-    file << "  </fieldset>";
+    file << "  </fieldset>"
+            "  <form action='/"<<nameEntityL<<"/remove' method='post' onsubmit=\"return confirm('Confirm DELETE?');\">";
+    for(const Variable& var: entity.vecVariable)
+        if(var.key)
+            file << "    <input type='hidden' name='"<<var.name<<"' value='ID'/>";
+    file << "    <button>Delete</button>"
+            "  </form>"
+            "  <form action='/"<<nameEntityL<<"/edit' method='get' >";
+    for(const Variable& var: entity.vecVariable)
+        if(var.key)
+            file << "    <input type='hidden' name='"<<var.name<<"' value='X'/>";
+    file << "    <button>Edit</button>"
+            "  </form>";
+}
+
+void CreateView::createEdit()
+{
+    ofstream file(viewDir+"/"+nameEntityL+"/edit.html");
+    if(!file.is_open())
+        throw runtime_error("not possibele create "+viewDir+"/"+nameEntityL+"/edit.html");
+
+    file << "<h2>Edit</h2>\n"
+            "<form method='post' action='/"<<nameEntityL<<"/edit/save'>"
+            "  <fieldset>"
+            "   <legend>New "<<entity.name<<"</legend>";
+    for(const Variable& var: entity.vecVariable){
+        file << "   <label>"<<var.name<<": <input name='"<<var.name<<"' ";
+        if(var.type=="tm")
+            file << "type='date'";
+        file << "></label>";
+    }
+    file << "  </fieldset>"
+            "<input type='submit' value='Submit'>"
+            "</form>";
 }

@@ -32,7 +32,10 @@ void CreateController::generateControlH(Entity &entity)
             "\tvoid list(Request &request, StreamResponse &response);\n"
             "\tvoid add(Request &request, StreamResponse &response);\n"
             "\tvoid save(Request &request, StreamResponse &response);\n"
+            "\tvoid edit(Request &request, StreamResponse &response);\n"
+            "\tvoid editSave(Request &request, StreamResponse &response);\n"
             "\tvoid show(Request &request, StreamResponse &response);\n"
+            "\tvoid remove(Request &request, StreamResponse &response);\n"
             "\t"<<entity.name<<" request2Obj(Request& request);\n"
             "};\n\n"
             "#endif";
@@ -53,12 +56,18 @@ void CreateController::generateControlCpp(Entity &entity)
               "\taddRoute(\"GET\", \"/"<<nameEntityL<<"/list\", "<<entity.name<<SUFFIX_CONTROL<<", list);\n"
               "\taddRoute(\"GET\", \"/"<<nameEntityL<<"/add\", "<<entity.name<<SUFFIX_CONTROL<<", add);\n"
               "\taddRoute(\"GET\", \"/"<<nameEntityL<<"/show\", "<<entity.name<<SUFFIX_CONTROL<<", show);\n"
+              "\taddRoute(\"GET\", \"/"<<nameEntityL<<"/edit\", "<<entity.name<<SUFFIX_CONTROL<<", edit);\n"
+              "\taddRoute(\"POST\", \"/"<<nameEntityL<<"/edit/save\", "<<entity.name<<SUFFIX_CONTROL<<", editSave);\n"
               "\taddRoute(\"POST\", \"/"<<nameEntityL<<"/save\", "<<entity.name<<SUFFIX_CONTROL<<", save);\n"
+              "\taddRoute(\"POST\", \"/"<<nameEntityL<<"/remove\", "<<entity.name<<SUFFIX_CONTROL<<", remove);\n"
             "}\n";
     insertListImplemantation(file, entity);
     insertAddImplemantation(file, entity);
-    insertSaveImplemantation(file,entity);
     insertShowImplemantation(file, entity);
+    insertSaveImplemantation(file,entity);
+    insertEditImplemantation(file, entity);
+    insertEditSaveImplemantation(file, entity);
+    insertDeleteImplemantation(file, entity);
     insertRequest2Obj(file, entity);
 
 }
@@ -114,6 +123,58 @@ void CreateController::insertSaveImplemantation(ofstream &file, Entity &entity)
             "}\n";
 }
 
+void CreateController::insertEditSaveImplemantation(ofstream &file, Entity &entity)
+{
+    file << "void " << entity.name<<SUFFIX_CONTROL << "::editSave(Request &request, StreamResponse &response)\n{\n"
+            "\t"<<entity.name<<"List oldObj = model.list(";
+    bool virgula = false;
+    for(Variable var: entity.vecVariable){
+        if(var.key){
+            if(virgula)
+                file << " AND ";
+            file << "\""<< var.name << "='\"+getSession(request, response).get(\""<<var.name<<"\", \"\")";
+            virgula=true;
+        }
+    }
+
+    file << "+'\\'');\n"
+            "\tif(oldObj.empty())\n"
+            "\t\tthrow runtime_error(\"Not Exist\");\n"
+            "\t"<<entity.name<<" newObj = request2Obj(request);\n"
+            "\tmodel.update(*oldObj[0], newObj);\n"
+            "\tredirecionar(response, \"/"<<nameEntityL<<"/list\");\n"
+            "}\n";
+}
+
+void CreateController::insertEditImplemantation(ofstream &file, Entity &entity)
+{
+    file << "void " << entity.name<<SUFFIX_CONTROL << "::edit(Request &request, StreamResponse &response)\n{\n"
+            "\tPage page = createPage(\"/"<<nameEntityL<<"/edit.html\");\n"
+            "\t"<<entity.name<<"List "<<nameEntityL<<" = model.list(";
+    bool virgula = false;
+    for(Variable var: entity.vecVariable){
+        if(var.key){
+            if(virgula)
+                file << " AND ";
+            file << "\""<< var.name << "='\"+request.get(\""<<var.name<<"\")";
+            virgula=true;
+        }
+    }
+    file << "+'\\'');\n"
+            "\tif("<<nameEntityL<<".empty())\n"
+            "\t\tthrow runtime_error(\"Not Exist\");\n";
+
+    for(Variable var: entity.vecVariable)
+        if(var.key)
+            file << "\tgetSession(request, response).setValue( \""<<var.name<<"\", "<<(var.type!="string"?"to_string":"")<<"("<<nameEntityL<<"[0]->get"<<upcaseFirstChar(var.name)<<"()) );\n";
+
+    for(Variable var: entity.vecVariable)
+        file << "\tpage.getTagsByName(\""<<var.name<<"\").at(0)->setAttribute(\"value\", "<<(var.type!="string"?"to_string(":"")<<nameEntityL<<"[0]->get"<<upcaseFirstChar(var.name)<<"()"<<(var.type!="string"?")":"")<<" ) ;\n";
+
+    file << "\tresponse << page;\n"
+            "}\n";
+}
+
 void CreateController::insertShowImplemantation(ofstream &file, Entity &entity)
 {
     file << "void " << entity.name<<SUFFIX_CONTROL << "::show(Request &request, StreamResponse &response)\n{\n"
@@ -128,12 +189,29 @@ void CreateController::insertShowImplemantation(ofstream &file, Entity &entity)
             virgula=true;
         }
     }
-    file << "+'\\'');\n";
+    file << "+'\\'');\n"
+            "\tif("<<nameEntityL<<".empty())\n"
+            "\t\tthrow runtime_error(\"Not Exist\");\n";
 
     for(Variable var: entity.vecVariable)
         file << "\tpage.insertContentId(\""<<var.name<<"\", "<<nameEntityL<<"[0]->get"<<upcaseFirstChar(var.name)<<"());\n";
 
+    for(Variable var: entity.vecVariable)
+        if(var.key)
+            file << "\tauto nodes = page.getTagsByName(\""<<var.name<<"\");\n"
+                    "\tfor(auto& node: nodes)\n"
+                    "\t\tnode->setAttribute(\"value\", "<<nameEntityL<<"[0]->get"<<upcaseFirstChar(var.name)<<"());\n";
+
     file << "\tresponse << page;\n"
+            "}\n";
+}
+
+void CreateController::insertDeleteImplemantation(ofstream &file, Entity &entity)
+{
+    file << "void " << entity.name<<SUFFIX_CONTROL << "::remove(Request &request, StreamResponse &response)\n{\n"
+            "\t"<<entity.name<<" obj = request2Obj(request);\n"
+            "\tmodel.remove(obj);\n"
+            "\tredirecionar(response, \"/"<<nameEntityL<<"/list\");\n"
             "}\n";
 }
 

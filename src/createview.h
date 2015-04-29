@@ -13,6 +13,7 @@ public:
     void createList();
     void createAdd();
     void createShow();
+    void createEdit();
 };
 
 #endif // CREATEVIEW_H

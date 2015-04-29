@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 3.0.1, 2015-04-27T09:23:49. -->
+<!-- Written by QtCreator 3.0.1, 2015-04-29T17:21:21. -->
 <qtcreator>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
@@ -203,7 +203,7 @@
     </valuelist>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
-    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Arguments">-v ../WebContent ../../AlunoApp/src/entity/usuario.h 
+    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Arguments">-v yes -c yes -d ../WebContent ../../AlunoApp/src/entity/usuario.h 
 </value>
     <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable">/home/usuario/workspace/MongooseMVCFrameworkGen/build/MongooseMVCFrameworkGen</value>
     <value type="bool" key="ProjectExplorer.CustomExecutableRunConfiguration.UseTerminal">false</value>

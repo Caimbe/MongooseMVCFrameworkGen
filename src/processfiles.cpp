@@ -15,9 +15,12 @@ ProcessFiles::ProcessFiles(Options& options)
     {
         ifstream file(fileName);
         Entity entity = createEntity(file);
-        CreateModel m(entity);
-        CreateView v(options.viewDir, entity);
-        CreateController c(entity);
+        if(options.model)
+            CreateModel m(entity);
+        if(options.view)
+            CreateView v(options.viewDir, entity);
+        if(options.controller)
+            CreateController c(entity);
     }
 }
 
@@ -30,7 +33,7 @@ Entity ProcessFiles::createEntity(const ifstream &file)
     stringstream contentFile; contentFile << file.rdbuf();
     size_t pos;
     boost::cmatch res;
-    boost::regex rx("(int|short|long|float|double|string|tm)\\s\\S*[^\\)];", boost::regex::extended);
+    boost::regex rx("(int|short|long|float|double|string|tm)\\s\\S*[^\\)](;|\\s|=)", boost::regex::extended);
 
     for (std::string line; std::getline(contentFile, line); )
     {

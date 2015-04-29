@@ -9,6 +9,9 @@ struct Options
 {
     vector<string> vecFileName;
     string viewDir;
+    bool model = false;
+    bool view = false;
+    bool controller = false;
 };
 
 class ProcessFiles

@@ -13,6 +13,8 @@ public:
     void createCpp();
     void createList(ofstream& file);
     void createSave(ofstream& file);
+    void createUpdade(ofstream& file);
+    void createDelete(ofstream& file);
 };
 
 #endif // CREATEMODEL_H

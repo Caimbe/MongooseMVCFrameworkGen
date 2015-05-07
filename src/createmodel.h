@@ -12,6 +12,7 @@ public:
     void createH();
     void createCpp();
     void createList(ofstream& file);
+    void createGet(ofstream& file);
     void createSave(ofstream& file);
     void createUpdade(ofstream& file);
     void createDelete(ofstream& file);

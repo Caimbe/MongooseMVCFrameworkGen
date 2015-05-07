@@ -7,8 +7,9 @@
 class CreateController
 {
     string nameEntityL;
+    vector<Entity> vecEntity;
 public:
-    CreateController(Entity &entity);
+    CreateController(Entity &entity, vector<Entity>& vecEntity);
 
     void generateControlH(Entity& entity);
     void generateControlCpp(Entity& entity);
@@ -20,6 +21,8 @@ public:
     void insertShowImplemantation(ofstream& file, Entity& entity);
     void insertDeleteImplemantation(ofstream& file, Entity& entity);
     void insertRequest2Obj(ofstream& file, Entity& entity);
+    string funcGetKey(Variable& var);
+    string funcGetType(Variable& var);
 };
 
 #endif // CREATECONTROLLER_H

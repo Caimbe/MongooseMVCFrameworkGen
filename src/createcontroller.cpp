@@ -1,12 +1,14 @@
 #include "createcontroller.h"
 #include "util.hpp"
 #include <fstream>
+#include <boost/algorithm/string.hpp>
 
 #define SUFFIX_CONTROL "Controller"
 
 
-CreateController::CreateController(Entity &entity)
+CreateController::CreateController(Entity &entity, vector<Entity>& vecEntity)
 {
+    this->vecEntity = vecEntity;
     nameEntityL = to_lower_copy(entity.name);
     makedir("control");
     generateControlH(entity);
@@ -36,7 +38,7 @@ void CreateController::generateControlH(Entity &entity)
             "\tvoid editSave(Request &request, StreamResponse &response);\n"
             "\tvoid show(Request &request, StreamResponse &response);\n"
             "\tvoid remove(Request &request, StreamResponse &response);\n"
-            "\t"<<entity.name<<" request2Obj(Request& request);\n"
+            "\t"<<entity.name<<" request2"<<entity.name<<"(Request& request);\n"
             "};\n\n"
             "#endif";
 
@@ -77,31 +79,29 @@ void CreateController::insertListImplemantation(ofstream &file, Entity &entity)
     file << "void " << entity.name<<SUFFIX_CONTROL << "::list(Request &request, StreamResponse &response)\n{\n"
             "\tPage page = createPage(\"/"<<nameEntityL<<"/list.html\");\n"
             "\t"<<entity.name<<"List list = model.list();\n"
-            "\tstring lines;\n"
+            "\tstringstream lines;\n"
             "\tfor(const "<<entity.name<<"Ptr& "<<nameEntityL<<": list)\n\t{\n"
-            "\t\tlines += \"  <tr>\"";
+            "\t\tlines << \"  <tr>\"";
     string paramShow;
     for(Variable var: entity.vecVariable)
     {
         if(var.key){
-            paramShow+=(paramShow.size()?"&":"");
-            paramShow+=var.name+"=\"+"+nameEntityL+"->get"+upcaseFirstChar(var.name)+"()";
+            paramShow+=(paramShow.size()?"<<\"&":"");
+            paramShow+=var.name+"=\"<<"+nameEntityL+"->"+funcGetKey(var);
         }
     }
     for(Variable var: entity.vecVariable)
     {
         file << "\n\t\t\"<td>"
-             << (var.key?"<a href=/"+nameEntityL+"/show?"+paramShow+"+\">\"+":"\"+")
-             << (var.type!="string"?"to_string(":"")
-             << nameEntityL<<"->get"
-             << upcaseFirstChar(var.name)
-             << "()"<<(var.type!="string"?")":"")
-             << (var.key?"+\"</a>\"":"")
-             << "+\"</td>\"";
+             << (var.key?"<a href=/"+nameEntityL+"/show?"+paramShow+"<<\">\"<<":"\"<<")
+             << nameEntityL<<"->"
+             << funcGetKey(var)
+             << (var.key?"<<\"</a>\"":"")
+             << "<<\"</td>\"";
     }
     file << "\n\t\t\"</tr>\\n\";\n"
             "\t}\n"
-            "\tpage.insertContentId(\"tlist\", lines);\n"
+            "\tpage.setContentId(\"tlist\", lines.str());\n"
             "\tresponse << page;\n"
             "}\n";
 }
@@ -117,7 +117,7 @@ void CreateController::insertAddImplemantation(ofstream &file, Entity &entity)
 void CreateController::insertSaveImplemantation(ofstream &file, Entity &entity)
 {
     file << "void " << entity.name<<SUFFIX_CONTROL << "::save(Request &request, StreamResponse &response)\n{\n"
-            "\t"<<entity.name<<" obj = request2Obj(request);\n"
+            "\t"<<entity.name<<" obj = request2"<<entity.name<<"(request);\n"
             "\tmodel.save(obj);\n"
             "\tredirecionar(response, \"/"<<nameEntityL<<"/list\");\n"
             "}\n";
@@ -126,22 +126,11 @@ void CreateController::insertSaveImplemantation(ofstream &file, Entity &entity)
 void CreateController::insertEditSaveImplemantation(ofstream &file, Entity &entity)
 {
     file << "void " << entity.name<<SUFFIX_CONTROL << "::editSave(Request &request, StreamResponse &response)\n{\n"
-            "\t"<<entity.name<<"List oldObj = model.list(";
-    bool virgula = false;
-    for(Variable var: entity.vecVariable){
-        if(var.key){
-            if(virgula)
-                file << " AND ";
-            file << "\""<< var.name << "='\"+getSession(request, response).get(\""<<var.name<<"\", \"\")";
-            virgula=true;
-        }
-    }
-
-    file << "+'\\'');\n"
-            "\tif(oldObj.empty())\n"
+            "\t"<<entity.name<<" obj = request2"<<entity.name<<"(request);\n"
+            "\t"<<entity.name<<"Ptr oldObj = model.get(obj);\n"
+            "\tif(!oldObj)\n"
             "\t\tthrow runtime_error(\"Not Exist\");\n"
-            "\t"<<entity.name<<" newObj = request2Obj(request);\n"
-            "\tmodel.update(*oldObj[0], newObj);\n"
+            "\tmodel.update(*oldObj, obj);\n"
             "\tredirecionar(response, \"/"<<nameEntityL<<"/list\");\n"
             "}\n";
 }
@@ -150,26 +139,16 @@ void CreateController::insertEditImplemantation(ofstream &file, Entity &entity)
 {
     file << "void " << entity.name<<SUFFIX_CONTROL << "::edit(Request &request, StreamResponse &response)\n{\n"
             "\tPage page = createPage(\"/"<<nameEntityL<<"/edit.html\");\n"
-            "\t"<<entity.name<<"List "<<nameEntityL<<" = model.list(";
-    bool virgula = false;
-    for(Variable var: entity.vecVariable){
-        if(var.key){
-            if(virgula)
-                file << " AND ";
-            file << "\""<< var.name << "='\"+request.get(\""<<var.name<<"\")";
-            virgula=true;
-        }
-    }
-    file << "+'\\'');\n"
-            "\tif("<<nameEntityL<<".empty())\n"
+            "\t"<<entity.name<<"Ptr "<<nameEntityL<<" = model.get(request2"<<entity.name<<"(request));\n"
+            "\tif(!"<<nameEntityL<<")\n"
             "\t\tthrow runtime_error(\"Not Exist\");\n";
 
     for(Variable var: entity.vecVariable)
         if(var.key)
-            file << "\tgetSession(request, response).setValue( \""<<var.name<<"\", "<<(var.type!="string"?"to_string":"")<<"("<<nameEntityL<<"[0]->get"<<upcaseFirstChar(var.name)<<"()) );\n";
+            file << "\tgetSession(request, response).setValue( \""<<var.name<<"\", "<<(var.type!="string"?"to_string":"")<<"("<<nameEntityL<<"->"<<funcGetKey(var)<<(var.type!="string"?")":"")<<" );\n";
 
     for(Variable var: entity.vecVariable)
-        file << "\tpage.getTagsByName(\""<<var.name<<"\").at(0)->setAttribute(\"value\", "<<(var.type!="string"?"to_string(":"")<<nameEntityL<<"[0]->get"<<upcaseFirstChar(var.name)<<"()"<<(var.type!="string"?")":"")<<" ) ;\n";
+        file << "\tpage.getTagsByName(\""<<var.name<<"\").at(0)->setAttribute(\"value\", "<<(var.type!="string"?"to_string(":"")<<nameEntityL<<"->"<<funcGetKey(var)<<(var.type!="string"?")":"")<<" ) ;\n";
 
     file << "\tresponse << page;\n"
             "}\n";
@@ -179,29 +158,22 @@ void CreateController::insertShowImplemantation(ofstream &file, Entity &entity)
 {
     file << "void " << entity.name<<SUFFIX_CONTROL << "::show(Request &request, StreamResponse &response)\n{\n"
             "\tPage page = createPage(\"/"<<nameEntityL<<"/show.html\");\n"
-            "\t"<<entity.name<<"List "<<nameEntityL<<" = model.list(";
-    bool virgula = false;
-    for(Variable var: entity.vecVariable){
-        if(var.key){
-            if(virgula)
-                file << " OR ";
-            file << "\""<< var.name << "='\"+request.get(\""<<var.name<<"\")";
-            virgula=true;
-        }
-    }
-    file << "+'\\'');\n"
-            "\tif("<<nameEntityL<<".empty())\n"
+            "\t"<<entity.name<<"Ptr "<<nameEntityL<<" = model.get( request2"<<entity.name<<"(request) );\n"
+            "\tif(!"<<nameEntityL<<")\n"
             "\t\tthrow runtime_error(\"Not Exist\");\n";
 
     for(Variable var: entity.vecVariable)
-        file << "\tpage.insertContentId(\""<<var.name<<"\", "<<nameEntityL<<"[0]->get"<<upcaseFirstChar(var.name)<<"());\n";
+        file << "\tpage.insertContentId(\""<<var.name<<"\", "<<(var.type!="string"?"to_string(":"")<<nameEntityL<<"->"<<funcGetKey(var)<<(var.type!="string"?")":"")<<");\n";
 
-    for(Variable var: entity.vecVariable)
-        if(var.key)
-            file << "\tauto nodes = page.getTagsByName(\""<<var.name<<"\");\n"
+    int contNode=0;
+    for(Variable var: entity.vecVariable){
+        if(var.key){
+            file << "\t"<<(contNode<1?"auto":"")<<" nodes = page.getTagsByName(\""<<var.name<<"\");\n"
                     "\tfor(auto& node: nodes)\n"
-                    "\t\tnode->setAttribute(\"value\", "<<nameEntityL<<"[0]->get"<<upcaseFirstChar(var.name)<<"());\n";
-
+                    "\t\tnode->setAttribute(\"value\", "<<(var.type!="string"?"to_string(":"")<<nameEntityL<<"->"<<funcGetKey(var)<<(var.type!="string"?")":"")<<");\n";
+            contNode++;
+        }
+    }
     file << "\tresponse << page;\n"
             "}\n";
 }
@@ -209,7 +181,7 @@ void CreateController::insertShowImplemantation(ofstream &file, Entity &entity)
 void CreateController::insertDeleteImplemantation(ofstream &file, Entity &entity)
 {
     file << "void " << entity.name<<SUFFIX_CONTROL << "::remove(Request &request, StreamResponse &response)\n{\n"
-            "\t"<<entity.name<<" obj = request2Obj(request);\n"
+            "\t"<<entity.name<<" obj = request2"<<entity.name<<"(request);\n"
             "\tmodel.remove(obj);\n"
             "\tredirecionar(response, \"/"<<nameEntityL<<"/list\");\n"
             "}\n";
@@ -217,7 +189,7 @@ void CreateController::insertDeleteImplemantation(ofstream &file, Entity &entity
 
 void CreateController::insertRequest2Obj(ofstream &file, Entity &entity)
 {
-    file << entity.name <<' '<< entity.name<<SUFFIX_CONTROL << "::request2Obj(Request &request)\n{\n"
+    file << entity.name <<' '<< entity.name<<SUFFIX_CONTROL << "::request2"<<entity.name<<"(Request &request)\n{\n"
             "\t"<<entity.name<<" obj;\n";
 
     for(Variable var: entity.vecVariable)
@@ -226,11 +198,41 @@ void CreateController::insertRequest2Obj(ofstream &file, Entity &entity)
             file << "\tobj.set"<<upcaseFirstChar(var.name)<<"( strtotm( request.get(\""<< var.name<<"\")) );\n";
         else if(var.type == "string")
             file << "\tobj.set"<<upcaseFirstChar(var.name)<<"( request.get(\""<< var.name<<"\") );\n";
+        else if(var.key && var.type.rfind("Ptr")!=string::npos)
+            file << "\tobj.set"<<upcaseFirstChar(var.name)<<"( "<<upcaseFirstChar(var.name)<<"Ptr(new "<<upcaseFirstChar(var.name)<<"( boost::lexical_cast<"<<funcGetType(var)<<">( request.get(\""<< var.name<<"\"))) ) );\n";
+        else if(var.type == "double" || var.type == "float" || var.type == "int" || var.type == "short" || var.type == "long")
+            file << "\tobj.set"<<upcaseFirstChar(var.name)<<"( boost::lexical_cast<"<<funcGetType(var)<<">( request.get(\""<< var.name<<"\", \"0\")) );\n";
         else
-            file << "\tobj.set"<<upcaseFirstChar(var.name)<<"( boost::lexical_cast<"<<var.type<<">( request.get(\""<< var.name<<"\")) );\n";
+        file << "\tobj.set"<<upcaseFirstChar(var.name)<<"( boost::lexical_cast<"<<funcGetType(var)<<">( request.get(\""<< var.name<<"\")) );\n";
     }
 
     file << "\treturn obj;\n"
             "}\n";
+}
+
+string CreateController::funcGetKey(Variable &var)
+{
+    if(var.type.rfind("Ptr")!=string::npos)
+    {
+        auto itE=vecEntity.begin();
+        for(; boost::to_lower_copy(itE->name)!=var.name; itE++);
+        auto itV=itE->vecVariable.begin();
+        for(;!itV->key;itV++);
+        return "get"+upcaseFirstChar(var.name)+"()->get"+upcaseFirstChar(itV->name)+"()";
+    }
+    return "get"+upcaseFirstChar(var.name)+"()";
+}
+
+string CreateController::funcGetType(Variable &var)
+{
+    if(var.type.rfind("Ptr")!=string::npos)
+    {
+        auto itE=vecEntity.begin();
+        for(; boost::to_lower_copy(itE->name)!=var.name; itE++);
+        auto itV=itE->vecVariable.begin();
+        for(;!itV->key;itV++);
+        return itV->type;
+    }
+    return var.type;
 }
 

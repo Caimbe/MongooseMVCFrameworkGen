@@ -15,32 +15,44 @@ ProcessFiles::ProcessFiles(Options& options)
     {
         ifstream file(fileName);
         Entity entity = createEntity(file);
+        vecEntity.push_back(entity);
+    }
+    for(const string& fileName: options.vecFileName)
+    {
+        ifstream file(fileName);
+        Entity entity = createEntity(file, vecEntity);
         if(options.model)
             CreateModel m(entity);
         if(options.view)
             CreateView v(options.viewDir, entity);
         if(options.controller)
-            CreateController c(entity);
+            CreateController c(entity, vecEntity);
     }
 }
 
 
 
 
-Entity ProcessFiles::createEntity(const ifstream &file)
+Entity ProcessFiles::createEntity(const ifstream &file, const vector<Entity>& vecEntityName)
 {
     Entity entity;
-    stringstream contentFile; contentFile << file.rdbuf();
+    stringstream contentFile;
+    contentFile << file.rdbuf();
     size_t pos;
     boost::cmatch res;
-    boost::regex rx("(int|short|long|float|double|string|tm)\\s\\S*[^\\)](;|\\s|=)", boost::regex::extended);
+    string types = "int|short|long|bool|char|float|double|string|tm";
+    for(const Entity& entity: vecEntityName)
+        types+="|"+entity.name+"Ptr";
+    boost::regex rx("("+types+")\\s\\S*[^\\)](;|\\s|=)", boost::regex::extended);
 
     for (std::string line; std::getline(contentFile, line); )
     {
-        if((pos = line.find("class"))!=string::npos)
+        if((pos = line.find("class"))!=string::npos){
             entity.name = line.substr(pos+6);
+            continue;
+        }
 
-        if( boost::regex_search(line.c_str(), res, rx) ){
+        if( boost::regex_search(line.c_str(), res, rx) && line.find('(')==string::npos ){
             string str = res.str();
             Variable var;
             size_t posB = str.find(' ');

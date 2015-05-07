@@ -28,6 +28,7 @@ void CreateModel::createH()
             "\tvoid update("<<entity.name<<"& "<<nameEntityL<<");\n"
             "\tvoid update("<<entity.name<<"& oldObj, "<<entity.name<<"& newObj);\n"
             "\tvoid remove("<<entity.name<<"& "<<nameEntityL<<");\n"
+            "\t"<<entity.name<<"Ptr get(const "<<entity.name<<"& "<<nameEntityL<<");\n"
             "\t"<<entity.name<<"List list(const string& where=\"\");\n"
             "};\n"
             "#endif";
@@ -39,6 +40,7 @@ void CreateModel::createCpp()
 
     file << "#include \""<<nameEntityL<<"model.h\"\n\n";
     createList(file);
+    createGet(file);
     createSave(file);
     createUpdade(file);
     createDelete(file);
@@ -48,6 +50,13 @@ void CreateModel::createList(ofstream& file)
 {
     file << entity.name<<"List "<<entity.name<<"Model::list(const string& where)\n{\n"
             "\treturn repository.select<"<<entity.name<<"List>(where);\n"
+            "}\n";
+}
+
+void CreateModel::createGet(ofstream &file)
+{
+    file << entity.name<<"Ptr "<<entity.name<<"Model::get(const "<<entity.name<<"& obj)\n{\n"
+            "\treturn repository.select<"<<entity.name<<"Ptr>(obj);\n"
             "}\n";
 }
 

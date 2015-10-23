@@ -57,7 +57,7 @@ Options process_command_line(int argc, char** argv)
               options(desc).positional(p).run(), vm);
     po::notify(vm); // throws on error, so do after help in case there are any problems
 
-    if (vm.count("help") || vm.size()==0)
+    if (vm.count("help") || argc==1)
     {
         std::cout << "Basic Command Line Parameter App" << std::endl
                   << desc << std::endl;

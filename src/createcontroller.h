@@ -4,6 +4,8 @@
 #include "entity.h"
 #include <fstream>
 
+#define DIR_CONTROL "controller/"
+
 class CreateController
 {
     string nameEntityL;

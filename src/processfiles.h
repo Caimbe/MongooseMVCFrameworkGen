@@ -20,6 +20,7 @@ class ProcessFiles
 
     Entity createEntity(const ifstream& file, const vector<Entity>& vecEntityName=vector<Entity>());
     void createControllerBase();
+    void createModelBase();
 public:
     ProcessFiles(Options& options);
 };

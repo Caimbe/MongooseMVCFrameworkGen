@@ -10,7 +10,7 @@ CreateController::CreateController(Entity &entity, vector<Entity>& vecEntity)
 {
     this->vecEntity = vecEntity;
     nameEntityL = to_lower_copy(entity.name);
-    makedir("control");
+    makedir(DIR_CONTROL);
     generateControlH(entity);
     generateControlCpp(entity);
     clog << entity.name << " Controll Genereted.\n";
@@ -19,7 +19,7 @@ CreateController::CreateController(Entity &entity, vector<Entity>& vecEntity)
 void CreateController::generateControlH(Entity &entity)
 {
     string fileName = boost::algorithm::to_lower_copy(entity.name+SUFFIX_CONTROL);
-    std::ofstream file("control/"+fileName+".h");
+    std::ofstream file(DIR_CONTROL+fileName+".h");
 
     boost::algorithm::to_upper(fileName);
     file << "#ifndef " << fileName << "_H\n"
@@ -47,7 +47,7 @@ void CreateController::generateControlH(Entity &entity)
 void CreateController::generateControlCpp(Entity &entity)
 {
     string fileName = boost::algorithm::to_lower_copy(entity.name+SUFFIX_CONTROL);
-    std::ofstream file("control/"+fileName+".cpp");
+    std::ofstream file(DIR_CONTROL+fileName+".cpp");
 
     file << "#include \"" << fileName <<".h\"\n"
             "#include <htmlcxx/html/Page.h>\n"
@@ -94,8 +94,10 @@ void CreateController::insertListImplemantation(ofstream &file, Entity &entity)
     {
         file << "\n\t\t\"<td>"
              << (var.key?"<a href=/"+nameEntityL+"/show?"+paramShow+"<<\">\"<<":"\"<<")
+             << (var.type=="tm"?"to_string(":"")
              << nameEntityL<<"->"
              << funcGetKey(var)
+             << (var.type=="tm"?")":"")
              << (var.key?"<<\"</a>\"":"")
              << "<<\"</td>\"";
     }
@@ -195,15 +197,15 @@ void CreateController::insertRequest2Obj(ofstream &file, Entity &entity)
     for(Variable var: entity.vecVariable)
     {
         if(var.type == "tm")
-            file << "\tobj.set"<<upcaseFirstChar(var.name)<<"( strtotm( request.get(\""<< var.name<<"\")) );\n";
+            file << "\tobj.set"<<table2className(var.name)<<"( strtotm( request.get(\""<< var.name<<"\")) );\n";
         else if(var.type == "string")
-            file << "\tobj.set"<<upcaseFirstChar(var.name)<<"( request.get(\""<< var.name<<"\") );\n";
+            file << "\tobj.set"<<table2className(var.name)<<"( request.get(\""<< var.name<<"\") );\n";
         else if(var.key && var.type.rfind("Ptr")!=string::npos)
-            file << "\tobj.set"<<upcaseFirstChar(var.name)<<"( "<<upcaseFirstChar(var.name)<<"Ptr(new "<<upcaseFirstChar(var.name)<<"( boost::lexical_cast<"<<funcGetType(var)<<">( request.get(\""<< var.name<<"\"))) ) );\n";
+            file << "\tobj.set"<<table2className(var.name)<<"( "<<upcaseFirstChar(var.name)<<"Ptr(new "<<upcaseFirstChar(var.name)<<"( boost::lexical_cast<"<<funcGetType(var)<<">( request.get(\""<< var.name<<"\"))) ) );\n";
         else if(var.type == "double" || var.type == "float" || var.type == "int" || var.type == "short" || var.type == "long")
-            file << "\tobj.set"<<upcaseFirstChar(var.name)<<"( boost::lexical_cast<"<<funcGetType(var)<<">( request.get(\""<< var.name<<"\", \"0\")) );\n";
+            file << "\tobj.set"<<table2className(var.name)<<"( boost::lexical_cast<"<<funcGetType(var)<<">( request.get(\""<< var.name<<"\", \"0\")) );\n";
         else
-        file << "\tobj.set"<<upcaseFirstChar(var.name)<<"( boost::lexical_cast<"<<funcGetType(var)<<">( request.get(\""<< var.name<<"\")) );\n";
+        file << "\tobj.set"<<table2className(var.name)<<"( boost::lexical_cast<"<<funcGetType(var)<<">( request.get(\""<< var.name<<"\")) );\n";
     }
 
     file << "\treturn obj;\n"
@@ -218,9 +220,9 @@ string CreateController::funcGetKey(Variable &var)
         for(; boost::to_lower_copy(itE->name)!=var.name; itE++);
         auto itV=itE->vecVariable.begin();
         for(;!itV->key;itV++);
-        return "get"+upcaseFirstChar(var.name)+"()->get"+upcaseFirstChar(itV->name)+"()";
+        return "get"+table2className(var.name)+"()->get"+table2className(itV->name)+"()";
     }
-    return "get"+upcaseFirstChar(var.name)+"()";
+    return "get"+table2className(var.name)+"()";
 }
 
 string CreateController::funcGetType(Variable &var)

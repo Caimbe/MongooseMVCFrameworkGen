@@ -11,6 +11,7 @@
 ProcessFiles::ProcessFiles(Options& options)
 {
     createControllerBase();
+    createModelBase();
     for(const string& fileName: options.vecFileName)
     {
         ifstream file(fileName);
@@ -69,7 +70,7 @@ Entity ProcessFiles::createEntity(const ifstream &file, const vector<Entity>& ve
 
 void ProcessFiles::createControllerBase()
 {
-    ofstream file("control/controllerbase.h");
+    ofstream file(DIR_CONTROL"controllerbase.h");
     file << "#ifndef CONTROLLERBASE_H\n"
         "#define CONTROLLERBASE_H\n\n"
 
@@ -92,7 +93,7 @@ void ProcessFiles::createControllerBase()
 
         "#endif // Controlador_H\n";
 
-    ofstream filecpp("control/controllerbase.cpp");
+    ofstream filecpp(DIR_CONTROL"controllerbase.cpp");
     filecpp << "#include \"controllerbase.h\"\n\n"
 
                "ControllerBase::ControllerBase()\n"
@@ -110,20 +111,53 @@ void ProcessFiles::createControllerBase()
                "{\n"
                    "\tPage page;\n"
                    "\tifstream ftemplate(server->getOption(\"document_root\")+server->getOption(\"template_page\"));\n"
-                   "\tif(ftemplate.is_open())\n"
-                       "\t\tpage.setContent(ftemplate);\n"
-                   "\telse\n"
-                       "\t\tthrow runtime_error(\"template file not found! The option template_page is: \"+server->getOption(\"template_page\"));\n\n"
-
                    "\tifstream fcontent(server->getOption(\"document_root\")+fileName);\n"
                    "\tif(fcontent.is_open())\n"
-                       "\t\tpage.insertContentId(\"content\", fcontent);\n"
+                   "\t{\n"
+                    "\t\tif(ftemplate.is_open()){\n"
+                       "\t\t\tpage.setContent(ftemplate);\n"
+                       "\t\t\tpage.insertContentId(\"content\", fcontent);\n"
+                    "\t\t}else{\n"
+                        "\t\t\tpage.setContent(fcontent);\n"
+                    "\t\t}\n"
+                   "\t}\n"
                    "\telse\n"
                        "\t\tthrow runtime_error(\"content file not found: \"+fileName);\n\n"
 
-                   "\tcout << ftemplate;\n\n"
-
                    "\treturn page;\n"
                "}\n";
+}
+
+void ProcessFiles::createModelBase()
+{
+    ofstream file("model/model.h");
+    file << "#ifndef MODEL_H\n"
+        "#define MODEL_H\n\n"
+
+        "#include \"repository/repository.h\"\n\n"
+
+        "using namespace std;\n"
+
+        "class Model\n"
+        "{\n"
+        "public:\n"
+            "\tstatic Repository repository;\n"
+            "\tModel();\n"
+            "\tvoid openRepository(const string& url);"
+        "};\n\n"
+
+        "#endif // Controlador_H\n";
+
+    ofstream filecpp("model/model.cpp");
+    filecpp << "#include \"model.h\"\n\n"
+
+        "Repository Model::repository;\n\n"
+        "Model::Model()\n"
+        "{\n"
+        "}\n\n"
+
+        "void Model::openRepository(const string& url)\n{\n"
+            "\trepository.open(url);\n"
+        "}\n\n";
 }
 

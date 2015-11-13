@@ -10,8 +10,11 @@
 
 ProcessFiles::ProcessFiles(Options& options)
 {
-    createControllerBase();
-    createModelBase();
+    if(options.controllerDefaul)
+        createControllerBase();
+    if(options.modelDefaul)
+        createModelBase();
+
     for(const string& fileName: options.vecFileName)
     {
         ifstream file(fileName);

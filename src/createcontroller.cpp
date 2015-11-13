@@ -197,7 +197,7 @@ void CreateController::insertRequest2Obj(ofstream &file, Entity &entity)
     for(Variable var: entity.vecVariable)
     {
         if(var.type == "tm")
-            file << "\tobj.set"<<table2className(var.name)<<"( strtotm( request.get(\""<< var.name<<"\")) );\n";
+            file << "\tobj.set"<<table2className(var.name)<<"( stotm( request.get(\""<< var.name<<"\")) );\n";
         else if(var.type == "string")
             file << "\tobj.set"<<table2className(var.name)<<"( request.get(\""<< var.name<<"\") );\n";
         else if(var.key && var.type.rfind("Ptr")!=string::npos)

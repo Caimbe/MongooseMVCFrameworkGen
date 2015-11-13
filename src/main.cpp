@@ -45,6 +45,8 @@ Options process_command_line(int argc, char** argv)
             ("model,m", po::value<bool>()->default_value(false), "create class model")
             ("view,v", po::value<bool>()->default_value(false), "create file html view")
             ("controller,c", po::value<bool>()->default_value(false), "create class controller")
+            ("controller-base,cb", po::value<bool>()->default_value(false), "create class controller base")
+            ("model-base,mb", po::value<bool>()->default_value(false), "create class controller base")
     ;
 
     /************input-file not obrig.*****/
@@ -82,6 +84,14 @@ Options process_command_line(int argc, char** argv)
     if(vm.count("controller"))
     {
         opc.controller = vm["controller"].as<bool>();
+    }
+    if(vm.count("controller-base"))
+    {
+        opc.controllerDefaul = vm["controller-base"].as<bool>();
+    }
+    if(vm.count("model-base"))
+    {
+        opc.modelDefaul = vm["model-base"].as<bool>();
     }
 
     return opc;

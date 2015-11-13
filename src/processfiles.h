@@ -12,6 +12,8 @@ struct Options
     bool model = false;
     bool view = false;
     bool controller = false;
+    bool modelDefaul = false;
+    bool controllerDefaul = false;
 };
 
 class ProcessFiles
